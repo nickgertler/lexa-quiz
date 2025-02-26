@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <title>Quiz Player</title>
@@ -15,6 +15,12 @@
     <button id="nameSubmitBtn">Join</button>
   </div>
 
+  <!-- Waiting Screen -->
+  <div id="screenWaiting" class="screen hidden">
+    <h2>Waiting for the game to start...</h2>
+    <p>Hang tight until the quiz goes live!</p>
+  </div>
+
   <!-- Question Screen -->
   <div id="screenQuestion" class="screen hidden">
     <h2 id="questionText">Loading question...</h2>
@@ -25,13 +31,13 @@
   <div id="screenVoted" class="screen hidden">
     <h2>Thanks!</h2>
     <p>Your vote has been recorded.</p>
-    <p>Please wait for the next question…</p>
+    <p>Waiting for the next question…</p>
   </div>
 
   <!-- Thanks Screen (End of Quiz) -->
   <div id="screenThanks" class="screen hidden">
     <h2>That’s All!</h2>
-    <p>Thanks for playing.</p>
+    <p>Thanks for playing!</p>
   </div>
 
   <script src="app.js"></script>

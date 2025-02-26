@@ -2,6 +2,7 @@
 const API_BASE = 'https://quiz-controller-api-f86ea1ce8663.herokuapp.com';
 
 const screenName     = document.getElementById('screenName');
+const screenWaiting  = document.getElementById('screenWaiting');
 const screenQuestion = document.getElementById('screenQuestion');
 const screenVoted    = document.getElementById('screenVoted');
 const screenThanks   = document.getElementById('screenThanks');
@@ -15,30 +16,34 @@ const answersContainer = document.getElementById('answersContainer');
 // We'll store the user's name in localStorage so we ask only once
 let playerName = localStorage.getItem('playerName') || '';
 
-// The currently active question record (from /active)
-let activeQuestionId = null; // Airtable record ID
-let activeQuestionText = null; // string
-let answersMap = {}; // { '1': 'Answer text', '2': 'Answer text', ... }
+// We track if we've ever seen an active question
+// If not, we assume the game hasn't started yet (=> waiting screen).
+// Once we've seen at least one active question, if we see no active question again, we assume the quiz ended.
+let hasSeenAQuestion = false;
+
+let pollInterval = null;
+let activeQuestionId = null;
 
 // Show/hide screens
 function showScreen(name) {
   screenName.classList.add('hidden');
+  screenWaiting.classList.add('hidden');
   screenQuestion.classList.add('hidden');
   screenVoted.classList.add('hidden');
   screenThanks.classList.add('hidden');
 
-  if (name === 'name')    screenName.classList.remove('hidden');
+  if (name === 'name')     screenName.classList.remove('hidden');
+  if (name === 'waiting')  screenWaiting.classList.remove('hidden');
   if (name === 'question') screenQuestion.classList.remove('hidden');
-  if (name === 'voted')   screenVoted.classList.remove('hidden');
-  if (name === 'thanks')  screenThanks.classList.remove('hidden');
+  if (name === 'voted')    screenVoted.classList.remove('hidden');
+  if (name === 'thanks')   screenThanks.classList.remove('hidden');
 }
 
-// 1) On load, check if we have a name
+// 1) On load, check if we already have a player name
 window.addEventListener('load', () => {
   if (!playerName) {
     showScreen('name');
   } else {
-    // Jump straight into question polling
     startPolling();
   }
 });
@@ -55,68 +60,66 @@ nameSubmitBtn.addEventListener('click', () => {
   startPolling();
 });
 
-// 3) Start polling for active question
-let pollInterval = null;
+// 3) Start polling /active every few seconds
 function startPolling() {
-  showScreen('question'); // or a "loading question" screen
+  showScreen('waiting'); // Initially show waiting (in case there's no active question)
   pollInterval = setInterval(checkActiveQuestion, 3000);
   checkActiveQuestion();
 }
 
-// 4) Check /active to see if there's a question
+// 4) Check which question is active
 async function checkActiveQuestion() {
   try {
     const res = await fetch(`${API_BASE}/active`);
     const data = await res.json();
 
     if (!data.active) {
-      // No active question => quiz might be over
-      showScreen('thanks');
-      clearInterval(pollInterval);
+      // If there's NO active question:
+      if (!hasSeenAQuestion) {
+        // If we haven't seen a question yet => the quiz hasn't started
+        showScreen('waiting');
+      } else {
+        // We previously saw a question => the quiz must be done
+        showScreen('thanks');
+        clearInterval(pollInterval);
+      }
       return;
     }
 
-    // If we have a new question ID, or if it's changed, update UI
+    // If there's an active question:
+    // Mark that we definitely saw a question
+    hasSeenAQuestion = true;
+
     if (data.questionId !== activeQuestionId) {
+      // new or changed question
       activeQuestionId = data.questionId;
       loadQuestion(data.fields);
     }
   } catch (err) {
     console.error('Error polling active question:', err);
+    // Just ignore or show an error if you prefer
   }
 }
 
-// 5) Render question with answer buttons
+// 5) Load question data into the UI
 function loadQuestion(fields) {
-  // fields might include "Question", "Answer 1", "Answer 2"...
-  activeQuestionText = fields['Question'];
-  questionText.innerText = activeQuestionText || 'No question text';
-
+  questionText.innerText = fields['Question'] || 'No question text';
   answersContainer.innerHTML = '';
-  answersMap = {
-    '1': fields['Answer 1'] || '',
-    '2': fields['Answer 2'] || '',
-    '3': fields['Answer 3'] || '',
-    '4': fields['Answer 4'] || ''
-  };
 
   for (let i = 1; i <= 4; i++) {
-    const ansText = answersMap[i];
+    const ansText = fields[`Answer ${i}`] || '';
     if (!ansText) continue;
     const btn = document.createElement('button');
     btn.innerText = ansText;
     btn.onclick = () => castVote(i);
     answersContainer.appendChild(btn);
   }
-
-  // Show question screen (in case we were in "voted" screen for prior question)
   showScreen('question');
 }
 
 // 6) Cast a vote => POST /vote
 async function castVote(answerNumber) {
-  // Immediately go to "voted" screen
-  showScreen('voted');
+  showScreen('voted'); // Immediately show \"voted\" state
 
   try {
     const body = {
@@ -130,8 +133,7 @@ async function castVote(answerNumber) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-    // If successful, do nothing further—stay on "voted" screen
-    // We'll come back to "question" screen only when /active changes to a new question
+    // No further action needed; we remain on \"voted\" until the next active question
   } catch (err) {
     console.error('Error casting vote:', err);
     alert('Error submitting your vote. Please try again.');
