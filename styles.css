@@ -1,0 +1,44 @@
+/* Mobile-first styles */
+body {
+    margin: 0;
+    font-family: sans-serif;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .screen {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  .hidden {
+    display: none;
+  }
+  
+  h1, h2 {
+    margin-bottom: 20px;
+  }
+  
+  input[type="text"] {
+    width: 80%;
+    padding: 10px;
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+  
+  button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin: 10px;
+  }
+  
+  #answersContainer button {
+    display: block;
+    width: 80%;
+    margin: 10px auto;
+    text-align: center;
+    padding: 15px;
+    font-size: 1.1rem;
+  }
+  
