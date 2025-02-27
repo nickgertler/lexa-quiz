@@ -1,49 +1,114 @@
-/* Basic mobile-friendly styling */
+/* Matching the controller's style */
+
 body {
     margin: 0;
-    font-family: sans-serif;
+    padding: 0;
+    font-family: "Trebuchet MS", sans-serif;
+    background: linear-gradient(160deg, #cfe9ff 0%, #f4fcff 100%);
+    color: #333;
     text-align: center;
-    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .quiz-title {
+    font-size: 6.2rem;
+    margin-bottom: 10px;
+    color: #2d2f4b;
+  }
+  
+  .subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+    color: #555;
   }
   
   .screen {
-    max-width: 400px;
-    margin: 0 auto;
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+    margin-top: 60px;
+    display: block;
   }
   
   .hidden {
     display: none;
   }
   
-  h1, h2 {
+  .question-heading {
+    font-size: 1.8rem;
+    color: #1a1a1a;
     margin-bottom: 20px;
+    text-shadow: 1px 1px 0 #fff;
   }
   
-  input[type="text"] {
-    width: 80%;
-    padding: 10px;
-    font-size: 1rem;
-    margin-bottom: 10px;
+  /* Container for answers, styled like 'quiz show' boxes */
+  .answers-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 20px auto;
+    width: 90%;
+  }
+  .answer-box {
+    border: 3px solid #ffd700;
+    border-radius: 12px;
+    padding: 15px;
+    background: #fff9e6;
+    font-size: 1.1rem;
+    box-shadow: 0 0 5px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: transform 0.1s ease;
+  }
+  .answer-box:hover {
+    transform: scale(1.02);
+  }
+  .answer-box:active {
+    transform: scale(0.98);
   }
   
+  /* Buttons (like the 'Join' button) with same color scheme */
   button {
-    padding: 10px 20px;
+    background: #ffd700;
+    border: none;
+    border-radius: 8px;
+    padding: 15px 25px;
     font-size: 1rem;
     cursor: pointer;
+    color: #3b3b3b;
+    font-weight: bold;
+    text-transform: uppercase;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    transition: transform 0.1s ease;
     margin: 10px;
   }
-  
-  #answersContainer button {
-    display: block;
-    width: 80%;
-    margin: 10px auto;
-    text-align: center;
-    padding: 15px;
-    font-size: 1.1rem;
+  button:hover {
+    transform: scale(1.02);
+  }
+  button:active {
+    transform: scale(0.98);
   }
   
-  #sessionFooter {
+  /* Inputs for session and player name */
+  input[type="text"] {
+    display: block;
+    width: 70%;
+    margin: 10px auto;
+    padding: 10px;
+    font-size: 1rem;
+    border: 2px solid #eee;
+    border-radius: 6px;
+  }
+  
+  /* Footer pinned at bottom for the session name */
+  footer#sessionFooter {
+    font-size: 0.85rem;
+    color: #666;
+    position: fixed;
+    bottom: 8px;
+    width: 100%;
     text-align: center;
-    color: #777;
+    font-style: italic;
   }
   

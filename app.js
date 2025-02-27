@@ -1,6 +1,9 @@
 // Replace with your Heroku server URL:
 const API_BASE = 'https://quiz-controller-api-f86ea1ce8663.herokuapp.com';
 
+// Footer for session name
+const sessionFooter = document.getElementById('sessionFooter');
+
 // Screens
 const screenSession  = document.getElementById('screenSession');
 const screenWaiting  = document.getElementById('screenWaiting');
@@ -9,17 +12,14 @@ const screenVoted    = document.getElementById('screenVoted');
 const screenThanks   = document.getElementById('screenThanks');
 
 // Inputs/Buttons
-const sessionInput      = document.getElementById('sessionInput');
-const playerNameInput   = document.getElementById('playerNameInput');
-const joinBtn           = document.getElementById('joinBtn');
+const sessionInput     = document.getElementById('sessionInput');
+const playerNameInput  = document.getElementById('playerNameInput');
+const joinBtn          = document.getElementById('joinBtn');
 
-const questionText      = document.getElementById('questionText');
-const answersContainer  = document.getElementById('answersContainer');
+const questionText     = document.getElementById('questionText');
+const answersContainer = document.getElementById('answersContainer');
 
-// Footer
-const sessionFooter     = document.getElementById('sessionFooter');
-
-// Variables in memory (no localStorage)
+// Variables in memory
 let sessionName = '';
 let playerName  = '';
 let currentQuestionNumber = null;
@@ -41,12 +41,12 @@ function showScreen(name) {
   if (name === 'thanks')   screenThanks.classList.remove('hidden');
 }
 
-// 1) On page load, show session prompt
+// 1) On page load, show session/name prompt
 window.addEventListener('DOMContentLoaded', () => {
   showScreen('session');
 });
 
-// 2) Join button => store session & name, start polling
+// 2) Join button => read session & name, start polling
 joinBtn.addEventListener('click', () => {
   const s = sessionInput.value.trim();
   const p = playerNameInput.value.trim();
@@ -56,12 +56,14 @@ joinBtn.addEventListener('click', () => {
   }
   sessionName = s;
   playerName  = p;
-  sessionFooter.innerText = `Session: ${sessionName}`;
+
+  // Show session in footer
+  sessionFooter.textContent = `Session: ${sessionName}`;
 
   startPolling();
 });
 
-// 3) Start polling /active?session=SessionName every few seconds
+// 3) Start polling /active?session=... every few seconds
 function startPolling() {
   showScreen('waiting');
   pollInterval = setInterval(checkActiveQuestion, 3000);
@@ -83,20 +85,19 @@ async function checkActiveQuestion() {
       return;
     }
 
+    // If waiting: currentQuestion=0 => show waiting
     if (data.waiting) {
-      // Means currentQuestion=0 => quiz not started
       if (!hasSeenQuestion) {
-        // We haven't seen a question => remain in waiting
         showScreen('waiting');
       } else {
-        // If we had seen a question but now it's 0 => maybe the quiz restarted?
+        // if we've seen a question but it's back to waiting => maybe quiz restarted, but we'll do the same
         showScreen('waiting');
       }
       return;
     }
 
+    // If end => quiz finished
     if (data.end) {
-      // Means we've gone beyond last question => thanks
       showScreen('thanks');
       clearInterval(pollInterval);
       return;
@@ -104,11 +105,10 @@ async function checkActiveQuestion() {
 
     // We have an active question
     const newQNum = data.fields['Question Number'];
-    
-    // If the question number hasn't changed since we voted, remain on 'voted' screen
-    // This ensures we stay in 'voted' until the controller increments to the next question
+
+    // If the question number hasn't changed since we voted, remain on 'voted'
     if (currentQuestionNumber && newQNum === currentQuestionNumber && hasSeenQuestion) {
-      // No new question => do nothing (stay on voted)
+      // do nothing (stay on voted)
       return;
     }
 
@@ -124,24 +124,25 @@ async function checkActiveQuestion() {
 
 // 5) loadQuestion => show question text & answers
 function loadQuestion(fields) {
-  // If we were previously on 'voted', but the question changed => show question screen
   questionText.innerText = fields['Question'] || 'Untitled question';
   answersContainer.innerHTML = '';
 
   for (let i = 1; i <= 4; i++) {
     const ansText = fields[`Answer ${i}`] || '';
     if (!ansText) continue;
-    const btn = document.createElement('button');
-    btn.innerText = ansText;
-    btn.onclick = () => castVote(i);
-    answersContainer.appendChild(btn);
+    const div = document.createElement('div');
+    div.className = 'answer-box';
+    div.textContent = `${ansText}`;
+    div.onclick = () => castVote(i);
+    answersContainer.appendChild(div);
   }
+
   showScreen('question');
 }
 
 // 6) castVote => POST /vote
 async function castVote(answerNumber) {
-  // Move to voted screen immediately
+  // Immediately show 'voted'
   showScreen('voted');
 
   try {
@@ -156,7 +157,7 @@ async function castVote(answerNumber) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-    // We remain on 'voted' until the controller increments to the next question
+    // Stay on 'voted' until controller increments question
   } catch (err) {
     console.error('Error casting vote:', err);
     alert('Failed to submit vote.');

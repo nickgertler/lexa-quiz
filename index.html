@@ -1,16 +1,19 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Quiz Player</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Baby, do you know your mother?!</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
 
+  <!-- Footer with session name -->
+  <footer id="sessionFooter"></footer>
+
   <!-- Screen: Session/Name Prompt -->
   <div id="screenSession" class="screen">
-    <h1>Join the Quiz</h1>
+    <p class="subtitle">Enter your session and name to begin</p>
     <input type="text" id="sessionInput" placeholder="Session Name" />
     <input type="text" id="playerNameInput" placeholder="Your Name" />
     <button id="joinBtn">Join</button>
@@ -18,31 +21,27 @@
 
   <!-- Screen: Waiting -->
   <div id="screenWaiting" class="screen hidden">
-    <h2>Waiting for the quiz to start...</h2>
-    <p>Please stand by.</p>
+    <h1 class="quiz-title">Baby, do you know your mother?!</h1>
+    <h2 class="question-heading">Waiting for the quiz to start...</h2>
   </div>
 
   <!-- Screen: Question -->
   <div id="screenQuestion" class="screen hidden">
-    <h2 id="questionText">Loading question...</h2>
-    <div id="answersContainer"></div>
+    <h2 id="questionText" class="question-heading">Loading question...</h2>
+    <div id="answersContainer" class="answers-container"></div>
   </div>
 
   <!-- Screen: Voted -->
   <div id="screenVoted" class="screen hidden">
-    <h2>Thanks!</h2>
-    <p>Your vote has been recorded.</p>
-    <p>Waiting for the next question…</p>
+    <h2 class="question-heading">Thanks!</h2>
+    <p class="subtitle">Your vote has been recorded.<br>Waiting for the next question…</p>
   </div>
 
   <!-- Screen: Thanks (End) -->
   <div id="screenThanks" class="screen hidden">
-    <h2>Quiz Finished</h2>
-    <p>Thanks for playing!</p>
+    <h1>That's all folks!</h1>
+    <p>🦜</p>
   </div>
-
-  <!-- Session Footer (always visible) -->
-  <footer id="sessionFooter" style="margin-top:40px; font-size:0.9rem;"></footer>
 
   <script src="app.js"></script>
 </body>
