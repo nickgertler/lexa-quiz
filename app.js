@@ -1,5 +1,5 @@
 // Replace with your Heroku server URL:
-const API_BASE = 'https://YOUR-HEROKU-APP.herokuapp.com';
+const API_BASE = 'https://quiz-controller-api-f86ea1ce8663.herokuapp.com';
 
 // Screens
 const screenSession  = document.getElementById('screenSession');
