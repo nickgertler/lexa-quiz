@@ -8,17 +8,18 @@
 </head>
 <body>
 
-  <!-- Name Screen -->
-  <div id="screenName" class="screen">
-    <h1>Enter Your Name</h1>
-    <input type="text" id="nameInput" placeholder="Your Name" />
-    <button id="nameSubmitBtn">Join</button>
+  <!-- Session/Name Screen -->
+  <div id="screenSession" class="screen">
+    <h1>Join the Quiz</h1>
+    <input type="text" id="sessionInput" placeholder="Session Name" />
+    <input type="text" id="playerNameInput" placeholder="Your Name" />
+    <button id="joinBtn">Join</button>
   </div>
 
   <!-- Waiting Screen -->
   <div id="screenWaiting" class="screen hidden">
-    <h2>Waiting for the game to start...</h2>
-    <p>Hang tight until the quiz goes live!</p>
+    <h2>Waiting for the quiz to start...</h2>
+    <p>Please stand by.</p>
   </div>
 
   <!-- Question Screen -->
@@ -27,16 +28,16 @@
     <div id="answersContainer"></div>
   </div>
 
-  <!-- Voted/Success Screen -->
+  <!-- Voted Screen -->
   <div id="screenVoted" class="screen hidden">
     <h2>Thanks!</h2>
     <p>Your vote has been recorded.</p>
     <p>Waiting for the next question…</p>
   </div>
 
-  <!-- Thanks Screen (End of Quiz) -->
+  <!-- Thanks Screen -->
   <div id="screenThanks" class="screen hidden">
-    <h2>That’s All!</h2>
+    <h2>Quiz Finished</h2>
     <p>Thanks for playing!</p>
   </div>
 

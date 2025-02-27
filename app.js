@@ -1,109 +1,127 @@
 // Replace with your Heroku server URL:
 const API_BASE = 'https://quiz-controller-api-f86ea1ce8663.herokuapp.com';
 
-const screenName     = document.getElementById('screenName');
+const screenSession  = document.getElementById('screenSession');
 const screenWaiting  = document.getElementById('screenWaiting');
 const screenQuestion = document.getElementById('screenQuestion');
 const screenVoted    = document.getElementById('screenVoted');
 const screenThanks   = document.getElementById('screenThanks');
 
-const nameInput      = document.getElementById('nameInput');
-const nameSubmitBtn  = document.getElementById('nameSubmitBtn');
+const sessionInput      = document.getElementById('sessionInput');
+const playerNameInput   = document.getElementById('playerNameInput');
+const joinBtn           = document.getElementById('joinBtn');
 
-const questionText   = document.getElementById('questionText');
-const answersContainer = document.getElementById('answersContainer');
+const questionText      = document.getElementById('questionText');
+const answersContainer  = document.getElementById('answersContainer');
 
-// We'll store the user's name in localStorage so we ask only once
-let playerName = localStorage.getItem('playerName') || '';
+// We'll store sessionName/playerName in localStorage so we skip the prompt next time
+let sessionName = localStorage.getItem('sessionName') || '';
+let playerName  = localStorage.getItem('playerName') || '';
 
-// We track if we've ever seen an active question
-// If not, we assume the game hasn't started yet (=> waiting screen).
-// Once we've seen at least one active question, if we see no active question again, we assume the quiz ended.
+// Track if we've ever seen a question => if we see no question again, it means end
 let hasSeenAQuestion = false;
-
 let pollInterval = null;
-let activeQuestionId = null;
+let currentQuestionNumber = null;
 
 // Show/hide screens
 function showScreen(name) {
-  screenName.classList.add('hidden');
+  screenSession.classList.add('hidden');
   screenWaiting.classList.add('hidden');
   screenQuestion.classList.add('hidden');
   screenVoted.classList.add('hidden');
   screenThanks.classList.add('hidden');
 
-  if (name === 'name')     screenName.classList.remove('hidden');
+  if (name === 'session')  screenSession.classList.remove('hidden');
   if (name === 'waiting')  screenWaiting.classList.remove('hidden');
   if (name === 'question') screenQuestion.classList.remove('hidden');
   if (name === 'voted')    screenVoted.classList.remove('hidden');
   if (name === 'thanks')   screenThanks.classList.remove('hidden');
 }
 
-// 1) On load, check if we already have a player name
-window.addEventListener('load', () => {
-  if (!playerName) {
-    showScreen('name');
+// On load, check if we already have session/player info
+window.addEventListener('DOMContentLoaded', () => {
+  if (!sessionName || !playerName) {
+    showScreen('session');
   } else {
     startPolling();
   }
 });
 
-// 2) If user enters a name:
-nameSubmitBtn.addEventListener('click', () => {
-  const enteredName = nameInput.value.trim();
-  if (!enteredName) {
-    alert('Please enter a name!');
+// Join button => store session & name, start polling
+joinBtn.addEventListener('click', () => {
+  const s = sessionInput.value.trim();
+  const p = playerNameInput.value.trim();
+  if (!s || !p) {
+    alert('Please enter both session and your name.');
     return;
   }
-  playerName = enteredName;
+  sessionName = s;
+  playerName  = p;
+  localStorage.setItem('sessionName', sessionName);
   localStorage.setItem('playerName', playerName);
+
   startPolling();
 });
 
-// 3) Start polling /active every few seconds
+// Start polling /active?session=... every few seconds
 function startPolling() {
-  showScreen('waiting'); // Initially show waiting (in case there's no active question)
+  showScreen('waiting');
   pollInterval = setInterval(checkActiveQuestion, 3000);
   checkActiveQuestion();
 }
 
-// 4) Check which question is active
+// checkActiveQuestion => GET /active?session=SessionName
 async function checkActiveQuestion() {
   try {
-    const res = await fetch(`${API_BASE}/active`);
-    const data = await res.json();
+    const url = `${API_BASE}/active?session=${encodeURIComponent(sessionName)}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
 
-    if (!data.active) {
-      // If there's NO active question:
+    if (data.error === 'Session not found') {
+      // We have an invalid session => show session screen again
+      alert('Session not found. Please re-enter.');
+      clearInterval(pollInterval);
+      localStorage.removeItem('sessionName');
+      showScreen('session');
+      return;
+    }
+
+    if (data.waiting) {
+      // Session is found, but Current Question=0 => waiting
       if (!hasSeenAQuestion) {
-        // If we haven't seen a question yet => the quiz hasn't started
         showScreen('waiting');
       } else {
-        // We previously saw a question => the quiz must be done
-        showScreen('thanks');
-        clearInterval(pollInterval);
+        // If we had seen a question, but now waiting => means quiz might have restarted
+        // but let's just stay on waiting.
+        showScreen('waiting');
       }
       return;
     }
 
-    // If there's an active question:
-    // Mark that we definitely saw a question
+    if (data.end) {
+      // Means the quiz has moved beyond last question
+      showScreen('thanks');
+      clearInterval(pollInterval);
+      return;
+    }
+
+    // Otherwise we have an active question
     hasSeenAQuestion = true;
 
-    if (data.questionId !== activeQuestionId) {
-      // new or changed question
-      activeQuestionId = data.questionId;
-      loadQuestion(data.fields);
-    }
+    // data.questionId, data.fields
+    // We'll track the question number from the fields
+    currentQuestionNumber = data.fields['Question Number'];
+
+    loadQuestion(data.fields);
   } catch (err) {
     console.error('Error polling active question:', err);
-    // Just ignore or show an error if you prefer
+    // Could show an error or do nothing
   }
 }
 
-// 5) Load question data into the UI
+// loadQuestion => display question text & answers
 function loadQuestion(fields) {
-  questionText.innerText = fields['Question'] || 'No question text';
+  questionText.innerText = fields['Question'] || 'Untitled question';
   answersContainer.innerHTML = '';
 
   for (let i = 1; i <= 4; i++) {
@@ -114,28 +132,28 @@ function loadQuestion(fields) {
     btn.onclick = () => castVote(i);
     answersContainer.appendChild(btn);
   }
+
   showScreen('question');
 }
 
-// 6) Cast a vote => POST /vote
+// castVote => POST /vote
 async function castVote(answerNumber) {
-  showScreen('voted'); // Immediately show \"voted\" state
-
+  showScreen('voted');
   try {
     const body = {
+      sessionName,
+      questionNumber: currentQuestionNumber,
       voterName: playerName,
-      questionId: activeQuestionId,
-      answerNumber: answerNumber
+      answerNumber
     };
-
     await fetch(`${API_BASE}/vote`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
-    // No further action needed; we remain on \"voted\" until the next active question
+    // Once done, we stay on \"voted\" until the next question is loaded by the poll
   } catch (err) {
     console.error('Error casting vote:', err);
-    alert('Error submitting your vote. Please try again.');
+    alert('Failed to submit vote.');
   }
 }
