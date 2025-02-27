@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8">
   <title>Quiz Player</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
 
-  <!-- Session/Name Screen -->
+  <!-- Screen: Session/Name Prompt -->
   <div id="screenSession" class="screen">
     <h1>Join the Quiz</h1>
     <input type="text" id="sessionInput" placeholder="Session Name" />
@@ -16,30 +16,33 @@
     <button id="joinBtn">Join</button>
   </div>
 
-  <!-- Waiting Screen -->
+  <!-- Screen: Waiting -->
   <div id="screenWaiting" class="screen hidden">
     <h2>Waiting for the quiz to start...</h2>
     <p>Please stand by.</p>
   </div>
 
-  <!-- Question Screen -->
+  <!-- Screen: Question -->
   <div id="screenQuestion" class="screen hidden">
     <h2 id="questionText">Loading question...</h2>
     <div id="answersContainer"></div>
   </div>
 
-  <!-- Voted Screen -->
+  <!-- Screen: Voted -->
   <div id="screenVoted" class="screen hidden">
     <h2>Thanks!</h2>
     <p>Your vote has been recorded.</p>
     <p>Waiting for the next question…</p>
   </div>
 
-  <!-- Thanks Screen -->
+  <!-- Screen: Thanks (End) -->
   <div id="screenThanks" class="screen hidden">
     <h2>Quiz Finished</h2>
     <p>Thanks for playing!</p>
   </div>
+
+  <!-- Session Footer (always visible) -->
+  <footer id="sessionFooter" style="margin-top:40px; font-size:0.9rem;"></footer>
 
   <script src="app.js"></script>
 </body>

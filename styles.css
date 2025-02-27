@@ -1,3 +1,4 @@
+/* Basic mobile-friendly styling */
 body {
     margin: 0;
     font-family: sans-serif;
@@ -14,7 +15,11 @@ body {
     display: none;
   }
   
-  input[type=\"text\"] {
+  h1, h2 {
+    margin-bottom: 20px;
+  }
+  
+  input[type="text"] {
     width: 80%;
     padding: 10px;
     font-size: 1rem;
@@ -35,5 +40,10 @@ body {
     text-align: center;
     padding: 15px;
     font-size: 1.1rem;
+  }
+  
+  #sessionFooter {
+    text-align: center;
+    color: #777;
   }
   
